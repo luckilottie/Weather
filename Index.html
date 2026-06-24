@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🫧 weather 🫧</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ff85c2">
+    <link rel="apple-touch-icon" href="icon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --mermaid-aqua: #00f0ff;
+            --moe-pink: #ff85c2;
+            --pearl-glow: #ffffff;
+            --deep-sea: #005f8a;
+            --bubble-glass: rgba(200, 245, 255, 0.25);
+            --inner-bubble: rgba(255, 255, 255, 0.4);
+        }
+
+        body {
+            margin: 0;
+            padding: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            background: url('https://i.postimg.cc/K8WLGzPT/684495e309f1e7a6b1d1609f033f905c.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Fredoka', sans-serif;
+            overflow-y: auto;
+            color: var(--deep-sea);
+        }
+
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bubble-glass); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--moe-pink); border-radius: 10px; border: 2px dotted white; }
+
+        .weather-container {
+            background: var(--bubble-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 4px dotted var(--pearl-glow);
+            border-radius: 50px; 
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.8);
+            width: 85%;
+            max-width: 350px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            color: white;
+            font-weight: 700;
+            text-shadow: 2px 2px var(--moe-pink), -2px -2px var(--mermaid-aqua);
+        }
+
+        /* ✨ NEW SEARCH BAR STYLES ✨ */
+        .search-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+        
+        #search-input {
+            flex: 1;
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: 2px solid white;
+            background: var(--inner-bubble);
+            color: var(--deep-sea);
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            outline: none;
+            box-shadow: inset 1px 1px 5px rgba(0, 240, 255, 0.1);
+            text-shadow: 1px 1px 0px white;
+        }
+        
+        #search-input::placeholder {
+            color: var(--moe-pink);
+            opacity: 0.8;
+            text-shadow: none;
+        }
+        
+        .search-btn {
+            background: linear-gradient(135deg, var(--mermaid-aqua), var(--moe-pink));
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 240, 255, 0.3);
+            transition: transform 0.2s ease;
+        }
+        .search-btn:active { transform: scale(0.9); }
+
+        #location-name {
+            font-size: 1rem;
+            color: var(--deep-sea);
+            text-shadow: 1px 1px white;
+            margin-bottom: 15px;
+            font-weight: 700;
+            background: var(--inner-bubble);
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 2px dashed var(--mermaid-aqua);
+        }
+
+        #temp {
+            font-size: 5.5rem;
+            font-weight: 700;
+            margin: 0;
+            color: white;
+            text-shadow: 0 0 20px var(--mermaid-aqua), 3px 3px var(--moe-pink);
+        }
+
+        #feels-like {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--moe-pink);
+            text-shadow: 1px 1px white;
+        }
+
+        #status {
+            font-size: 1.2rem;
+            background: white;
+            color: var(--mermaid-aqua);
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 700;
+            box-shadow: 4px 4px 0px var(--moe-pink);
+            margin-bottom: 20px;
+            border: 2px solid var(--mermaid-aqua);
+        }
+
+        .tab-section { display: none; animation: fadeIn 0.4s ease; }
+        .tab-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+
+        .stat-box, .wide-box, .celestial-box {
+            background: var(--inner-bubble);
+            border: 2px solid white;
+            border-radius: 25px;
+            padding: 12px 5px;
+            box-shadow: 3px 3px 12px rgba(0, 240, 255, 0.2), inset -3px -3px 10px rgba(255,255,255,0.5);
+            color: var(--deep-sea);
+            font-weight: 700;
+            text-shadow: 1px 1px 0px white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wide-box { margin-bottom: 15px; padding: 15px; }
+        .celestial-box { margin-bottom: 15px; padding: 15px; }
+
+        .celestial-title {
+            font-size: 0.9rem;
+            color: var(--moe-pink);
+            text-shadow: 1px 1px 0px white;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 2px dotted var(--mermaid-aqua);
+            padding-bottom: 5px;
+            width: 100%;
+        }
+
+        .vibe-title { color: var(--mermaid-aqua); font-weight: 700; font-size: 1.15rem; margin: 5px 0; text-shadow: 1px 1px 0px white; }
+        .vibe-desc { font-size: 0.9rem; color: var(--deep-sea); line-height: 1.4; padding: 0 5px; }
+        
+        .aqi-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 5px 10px;
+            box-sizing: border-box;
+            border-bottom: 1px dotted rgba(255,255,255,0.5);
+            font-size: 0.85rem;
+        }
+        .aqi-row:last-child { border-bottom: none; }
+        .aqi-label { color: var(--deep-sea); text-shadow: 1px 1px 0px white; text-align: left; }
+        .aqi-val { font-weight: 900; color: var(--moe-pink); text-shadow: 1px 1px 0px white; text-align: right; }
+
+        .celestial-grid-v2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; margin-bottom: 15px; }
+        .celestial-item { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
+        .stat-icon { font-size: 1.6rem; margin-bottom: 2px; filter: drop-shadow(2px 2px 0px white); }
+        
+        .pixel-stamp {
+            width: 99px;
+            height: 99px;
+            border-radius: 10px;
+            border: 2px solid white;
+            box-shadow: 0 0 10px var(--mermaid-aqua);
+            object-fit: cover;
+            margin-bottom: 5px;
+        }
+
+        .stat-label { font-size: 0.75rem; text-transform: uppercase; color: var(--moe-pink); letter-spacing: 1px; text-align: center; font-weight: 700; }
+        .stat-value { font-size: 1rem; margin-top: 2px; text-align: center; color: var(--deep-sea);}
+        
+        #lunar-botanical-guide { font-size: 0.8rem; color: var(--deep-sea); margin-top: 3px; text-shadow: 1px 1px 0px white; line-height: 1.2; width: 100%; text-align: center; }
+
+        .atmosphere-scanner { margin-bottom: 15px; overflow: hidden; }
+        
+        #diorama-box {
+            width: 100%;
+            height: 200px;
+            border: 3px solid white;
+            border-radius: 15px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            background-size: 100% 100%; 
+            background-repeat: no-repeat;
+            background-position: center;
+            transition: background-image 0.5s ease;
+            margin-top: 10px;
+        }
+
+        .sprite {
+            position: absolute;
+            animation: drift linear infinite;
+        }
+
+        @keyframes drift {
+            0% { transform: translateX(-30px); }
+            50% { transform: translateX(30px); }
+            100% { transform: translateX(-30px); }
+        }
+
+        #cloud-scanner-output { font-size: 0.85rem; color: var(--deep-sea); margin-top: 15px; line-height: 1.4; width: 100%; text-align: center; border-top: 2px dotted rgba(255,255,255,0.5); padding-top: 10px; }
+        .uv-message { font-size: 0.9rem; color: var(--moe-pink); margin-top: 5px; font-weight: 700;}
+
+        .minutely-grid { display: flex; width: 100%; justify-content: space-between; gap: 5px; margin-top: 5px; }
+        .minutely-col { flex: 1; background: var(--bubble-glass); border-radius: 10px; padding: 8px 2px; font-size: 0.75rem; border: 1px dotted white; box-shadow: inset 1px 1px 5px rgba(255,255,255,0.5); }
+        .minutely-time { font-weight: 700; color: var(--moe-pink); margin-bottom: 3px; text-shadow: 1px 1px 0px white;}
+        .minutely-val { font-weight: 700; text-shadow: 1px 1px 0px white; }
+
+        .hourly-container { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px; margin-bottom: 15px; }
+        .hourly-box { min-width: 65px; background: var(--inner-bubble); border: 2px solid white; border-radius: 20px; padding: 10px; display: flex; flex-direction: column; align-items: center; box-shadow: 2px 2px 8px rgba(0, 240, 255, 0.15); }
+        .hourly-time { font-size: 0.85rem; color: var(--moe-pink); text-shadow: 1px 1px 0px white; margin-bottom: 3px; font-weight: 700;}
+        .hourly-icon { font-size: 1.3rem; filter: drop-shadow(2px 2px 0px white); margin: 3px 0; }
+        .hourly-temp { font-size: 1.1rem; font-weight: 700; color: var(--mermaid-aqua); text-shadow: 1px 1px 0px white; margin-top: 3px; }
+        .hourly-precip { font-size: 0.75rem; color: var(--deep-sea); font-weight: 700; margin-top: 3px; text-shadow: 1px 1px 0px white;}
+
+        .forecast-title { font-size: 1.3rem; margin: 15px 0 10px 0; color: white; font-weight: 700; text-shadow: 2px 2px var(--mermaid-aqua), -1px -1px var(--moe-pink); border-bottom: 3px dotted white; padding-bottom: 5px; }
+        .forecast-item { display: flex; flex-direction: column; background: var(--inner-bubble); margin-bottom: 10px; border-radius: 25px; border: 2px solid white; box-shadow: 2px 2px 8px rgba(0, 240, 255, 0.1); cursor: pointer; transition: transform 0.2s ease; }
+        .forecast-item:active { transform: scale(0.98); }
+        .forecast-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; font-size: 1rem; font-weight: 700; color: var(--deep-sea); text-shadow: 1px 1px 0px white; }
+        .forecast-day { width: 55px; text-align: left; color: var(--moe-pink); font-weight: 700;}
+        .forecast-icon { font-size: 1.3rem; filter: drop-shadow(2px 2px 0px white); }
+        .forecast-rain { font-size: 0.85rem; color: var(--mermaid-aqua); width: 45px; text-align: center; }
+        .forecast-temps { width: 80px; text-align: right; }
+        .min-temp { color: var(--mermaid-aqua); font-size: 0.9rem; margin-left: 5px;}
+        .forecast-details { display: none; padding: 0 18px 15px 18px; font-size: 0.85rem; text-align: left; border-top: 2px dotted rgba(255, 255, 255, 0.5); margin-top: 5px; padding-top: 10px; }
+        .forecast-details p { margin: 4px 0; color: var(--moe-pink); text-shadow: 1px 1px 0px white; }
+        .forecast-details span { color: var(--deep-sea); }
+
+        #loading { font-size: 1.2rem; font-weight: 700; color: white; animation: bounce 1.5s infinite; text-shadow: 2px 2px var(--mermaid-aqua); margin: 20px 0; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        .bottom-nav {
+            display: flex;
+            justify-content: space-between;
+            background: var(--inner-bubble);
+            border: 2px dotted white;
+            border-radius: 30px;
+            padding: 6px;
+            margin-top: 15px;
+            box-shadow: 2px 2px 8px rgba(0, 240, 255, 0.15);
+            gap: 6px;
+        }
+        
+        .nav-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--deep-sea);
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 12px 0;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s ease;
+            text-shadow: 1px 1px 0px white;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, var(--mermaid-aqua), var(--moe-pink));
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);
+        }
+
+        .btn-container { display: flex; gap: 10px; margin-top: 15px; width: 100%; }
+        .refresh-btn { flex: 1; background: linear-gradient(135deg, var(--mermaid-aqua), var(--moe-pink)); border: 3px solid white; padding: 12px 10px; border-radius: 50px; color: white; font-size: 1rem; font-family: 'Fredoka', sans-serif; font-weight: 700; letter-spacing: 1px; cursor: pointer; box-shadow: 0 6px 15px rgba(0, 240, 255, 0.3), inset 0 -3px 0 rgba(0,0,0,0.1); transition: 0.2s; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+        .refresh-btn:active { box-shadow: 0 2px 5px rgba(0, 240, 255, 0.3); transform: translateY(4px); }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(8px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: var(--bubble-glass); border: 4px dotted var(--pearl-glow); border-radius: 30px; width: 90%; max-width: 400px; height: 70%; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 25px rgba(0, 240, 255, 0.6); }
+        .close-radar-btn { background: var(--moe-pink); color: white; text-align: center; padding: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px dashed white; }
+        #radar-frame { width: 100%; height: 100%; border: none; }
+    </style>
+</head>
+<body>
+
+    <div class="weather-container">
+        <h1>🫧 Right Now 🫧</h1>
+        
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search city... 🌸" onkeypress="handleSearchKeyPress(event)">
+            <button class="search-btn" onclick="searchLocation()">🔍</button>
+        </div>
+
+        <div id="location-name">Scanning... (◕‿◕✿)</div>
+        
+        <div id="loading">Locating... 🫧</div>
+        
+        <div id="weather-content" style="display:none;">
+            
+            <div id="tab-now" class="tab-section active">
+                <div id="temp">--°</div>
+                <div id="feels-like">My RealFeel: <span id="apparent">--</span>°</div>
+                <div id="status">(>ω<) VIBING</div>
+
+                <div class="stats-grid" id="main-stats">
+                    <div class="stat-box">
+                        <div class="stat-icon">🫧</div>
+                        <div class="stat-label">Wind</div>
+                        <div class="stat-value"><span id="wind">--</span> mph</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-label">Gusts</div>
+                        <div class="stat-value"><span id="gusts">--</span> mph</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon">🌊</div>
+                        <div class="stat-label">Humidity</div>
+                        <div class="stat-value"><span id="humidity">--</span>%</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon">💧</div>
+                        <div class="stat-label">Dew Pt</div>
+                        <div class="stat-value"><span id="dewpoint">--</span>°</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon">🔭</div>
+                        <div class="stat-label">Visibility</div>
+                        <div class="stat-value"><span id="visibility">--</span> mi</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon">🪸</div>
+                        <div class="stat-label">Pressure</div>
+                        <div class="stat-value" style="font-size: 0.85rem;"><span id="pressure">--</span></div>
+                    </div>
+                </div>
+
+                <div class="wide-box">
+                    <div class="celestial-title">🫧 Air & Allergy Report 🫧</div>
+                    <div class="aqi-row">
+                        <span class="aqi-label">Overall AQI:</span>
+                        <span class="aqi-val" id="aqi-score">Scanning...</span>
+                    </div>
+                    <div class="aqi-row">
+                        <span class="aqi-label">Fine Particles (PM2.5):</span>
+                        <span class="aqi-val" id="aqi-pm25">--</span>
+                    </div>
+                    <div class="aqi-row">
+                        <span class="aqi-label">Dust (PM10):</span>
+                        <span class="aqi-val" id="aqi-pm10">--</span>
+                    </div>
+                    <div class="aqi-row">
+                        <span class="aqi-label">Ozone / Smog:</span>
+                        <span class="aqi-val" id="aqi-ozone">--</span>
+                    </div>
+                </div>
+
+                <div class="wide-box">
+                    <div class="celestial-title">🎀 Daily Vibe Index 🎀</div>
+                    <div class="vibe-title" id="vibe-title">Loading Vibes...</div>
+                    <div class="vibe-desc" id="vibe-desc">...</div>
+                </div>
+            </div>
+
+            <div id="tab-future" class="tab-section">
+                <div class="wide-box" style="padding-bottom: 5px;">
+                    <div class="celestial-title" style="border:none; margin-bottom: 0;">💧 Next 60 Mins 💧</div>
+                    <div class="minutely-grid" id="minutely-list"></div>
+                </div>
+
+                <div class="forecast-title">🫧 Next 24 Hours 🫧</div>
+                <div class="hourly-container" id="hourly-list"></div>
+
+                <div class="forecast-title">🫧 7-Day Outlook 🫧</div>
+                <div id="forecast-list"></div>
+            </div>
+
+            <div id="tab-sky" class="tab-section">
+                <div class="wide-box atmosphere-scanner">
+                    <div class="celestial-title">🧴 Sun & UV 🧴</div>
+                    <div class="stat-label">UV Index: <span id="uv-number">--</span></div>
+                    <div class="uv-message" id="uv-text">Checking the rays...</div>
+                </div>
+
+                <div class="wide-box">
+                    <div class="celestial-title">✨ Celestial Vibes ✨</div>
+                    <div class="celestial-grid-v2">
+                        <div class="celestial-item">
+                            <img class="pixel-stamp" src="https://i.postimg.cc/pX2NJQ95/fcc21a191313ea7e7ad9f23d615fbdd6.jpg" alt="Rise Stamp">
+                            <div class="stat-label">Rise</div>
+                            <div class="stat-value" id="sunrise">--:--</div>
+                        </div>
+                        <div class="celestial-item">
+                            <img class="pixel-stamp" src="https://i.postimg.cc/pX2NJQ9m/fe1fc3ebfafb9d2d765ccfd84af051fa.jpg" alt="Golden Hour Stamp">
+                            <div class="stat-label">Golden Hr</div>
+                            <div class="stat-value" id="golden-hour">--:--</div>
+                        </div>
+                        <div class="celestial-item">
+                            <img class="pixel-stamp" src="https://i.postimg.cc/028g0G6M/3b6149f779ec5e6827f5eb7fdc0b73af.jpg" alt="Set Stamp">
+                            <div class="stat-label">Set</div>
+                            <div class="stat-value" id="sunset">--:--</div>
+                        </div>
+                        <div class="celestial-item">
+                            <img class="pixel-stamp" src="https://i.postimg.cc/Fs9tVbff/d1fbe1c35c32494c9290ebf699c16fc6.jpg" alt="Phase Stamp">
+                            <div class="stat-label">Phase</div>
+                            <div class="stat-value" id="moon-phase">Scanning...</div>
+                            <div class="stat-icon" id="moon-icon" style="font-size: 1.2rem; margin-top: 2px;">🌙</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wide-box atmosphere-scanner">
+                    <div class="celestial-title">☁️ Sky Window ☁️</div>
+                    <div id="diorama-box"></div>
+                    <div id="cloud-scanner-output">Scanning the horizon...</div>
+                </div>
+
+                <div class="wide-box">
+                    <div class="celestial-title">🌌 Night Sky Clarity 🌌</div>
+                    <div class="vibe-title" id="stargazer-title">Scanning the void...</div>
+                    <div class="vibe-desc" id="stargazer-desc">...</div>
+                </div>
+            </div>
+
+            <div id="tab-flora" class="tab-section">
+                <div class="wide-box">
+                    <div class="celestial-title">🌱 Botanical Station 🌱</div>
+                    
+                    <div class="vibe-title" style="margin-top: 15px; font-size: 1rem;">🌕 Lunar Cycle Action</div>
+                    <div class="vibe-desc" id="lunar-botanical-guide">Calculating gravity...</div>
+
+                    <div class="vibe-title" style="margin-top: 15px; font-size: 1rem;">💧 Ambient Air Check</div>
+                    <div class="vibe-desc" id="flora-humidity-guide">Checking moisture...</div>
+                </div>
+            </div>
+
+            <div class="bottom-nav">
+                <button class="nav-btn active" onclick="switchTab('tab-now', this)">🎀 NOW</button>
+                <button class="nav-btn" onclick="switchTab('tab-future', this)">🔮 FUTURE</button>
+                <button class="nav-btn" onclick="switchTab('tab-sky', this)">✨ SKY</button>
+                <button class="nav-btn" onclick="switchTab('tab-flora', this)">🌱 FLORA</button>
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <button class="refresh-btn" onclick="fetchWeather()">REFRESH 🎀</button>
+            <button class="refresh-btn" onclick="openRadar()">📡 LIVE RADAR</button>
+        </div>
+    </div>
+
+    <div id="radar-modal" class="modal">
+        <div class="modal-content">
+            <div class="close-radar-btn" onclick="closeRadar()">🎀 CLOSE RADAR 🎀</div>
+            <iframe id="radar-frame" src=""></iframe>
+        </div>
+    </div>
+
+    <script>
+        let myLat = 0;
+        let myLon = 0;
+
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-section').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        const weatherMoji = {
+            0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
+            45: "🌫️", 48: "🌫️", 
+            51: "💧", 53: "💧", 55: "🌧️", 56: "🥶", 57: "🥶",
+            61: "🎀", 63: "🌧️", 65: "☔", 66: "🧊", 67: "🧊",
+            71: "❄️", 73: "❄️", 75: "⛄", 77: "🌨️",
+            80: "🌧️", 81: "☔", 82: "🌊", 85: "🌨️", 86: "⛄",
+            95: "⚡", 96: "🌩️", 99: "🌩️"
+        };
+
+        const weatherDescriptions = {
+            0: "Totally Sunny", 1: "Cute & Clear", 2: "A Bit Cloudy", 3: "Overcast Bummer",
+            45: "Foggy Mystery", 48: "Foggy Mystery", 51: "Light Drizzle", 53: "Drizzle", 55: "Heavy Drizzle",
+            56: "Freezing Drizzle", 57: "Icy Drizzle", 61: "Rainy Day", 63: "Steady Rain", 65: "Heavy Rain", 
+            66: "Freezing Rain", 67: "Heavy Ice Rain", 71: "Snowy Sparkles", 73: "Snowing", 75: "Heavy Snow", 
+            77: "Snow Grains", 80: "Sparkly Showers", 81: "Heavy Showers", 82: "Pouring", 
+            85: "Snow Showers", 86: "Heavy Snow Showers", 95: "Stormy Energy", 96: "Thunderstorm", 99: "Crazy Storm"
+        };
+
+        function getDayName(index) {
+            if (index === 0) return "Today";
+            const d = new Date();
+            d.setDate(d.getDate() + index);
+            return d.toLocaleDateString('en-US', { weekday: 'short' });
+        }
+
+        function getMathematicalHour(offset) {
+            if (offset === 0) return "Now";
+            const d = new Date();
+            d.setHours(d.getHours() + offset);
+            let h = d.getHours();
+            const ampm = h >= 12 ? 'pm' : 'am';
+            h = h % 12 || 12;
+            return `${h}${ampm}`;
+        }
+
+        function formatSunTime(utcString) {
+            try {
+                const d = new Date(utcString);
+                return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            } catch(e) { return "--:--"; }
+        }
+
+        function getGoldenHour(sunsetUtcString) {
+            try {
+                const d = new Date(sunsetUtcString);
+                d.setHours(d.getHours() - 1);
+                return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            } catch(e) { return "--:--"; }
+        }
+
+        function getUVSpeech(uv) {
+            if (uv <= 2) return "Low rays! Ur safe to glow! (≧◡≦)";
+            if (uv <= 5) return "Moderate! Grab some SPF! 🌸";
+            if (uv <= 7) return "High! Lather up, babe! ☀️";
+            if (uv <= 10) return "Very High! Protect that skin! ⛱️";
+            return "Extreme! Stay in the shade! (ﾟДﾟ;)";
+        }
+
+        function getMoonPhaseData() {
+            const now = new Date();
+            const julian = (now.getTime() / 86400000) + 2440587.5;
+            const lunarDays = julian - 2451550.26; 
+            const phase = (lunarDays / 29.53058867) % 1; 
+            const normalizedPhase = phase < 0 ? phase + 1 : phase;
+
+            let b = 0;
+            if (normalizedPhase < 0.015 || normalizedPhase > 0.985) b = 0; 
+            else if (normalizedPhase < 0.235) b = 1; 
+            else if (normalizedPhase < 0.265) b = 2; 
+            else if (normalizedPhase < 0.485) b = 3; 
+            else if (normalizedPhase < 0.515) b = 4; 
+            else if (normalizedPhase < 0.735) b = 5; 
+            else if (normalizedPhase < 0.765) b = 6; 
+            else b = 7; 
+            
+            const phases = [
+                { i: "🌑", n: "New Moon" }, { i: "🌒", n: "Waxing Cres" },
+                { i: "🌓", n: "1st Quarter" }, { i: "🌔", n: "Waxing Gib" },
+                { i: "🌕", n: "Full Moon" }, { i: "🌖", n: "Waning Gib" },
+                { i: "🌗", n: "Last Quarter" }, { i: "🌘", n: "Waning Cres" }
+            ];
+
+            let botanicalGuide = "...";
+            if (normalizedPhase >= 0.015 && normalizedPhase < 0.485) {
+                botanicalGuide = "The Moon is Waxing. Moisture is pulling UP into the leaves ⬆️. This is the optimal time for fertilizing and encouraging new leaf growth.";
+            } else if (normalizedPhase >= 0.485 && normalizedPhase < 0.515) {
+                botanicalGuide = "Full Moon Peak! 🌕 Ambient soil moisture is extremely high. Great for soaking seeds, but hold off on pruning.";
+            } else if (normalizedPhase >= 0.515 && normalizedPhase < 0.985) {
+                botanicalGuide = "The Moon is Waning. Energy is pulling DOWN to the roots ⬇️. This is the absolute perfect window for transplanting water cuttings into soil.";
+            } else {
+                botanicalGuide = "New Moon Rest Phase 🌑. Sap flow is slow and plants are dormant. This is the safest time to take fresh cuttings or prune dead leaves.";
+            }
+
+            return { phaseInfo: phases[b], botanicalGuide: botanicalGuide };
+        }
+
+        function setFloraVibe(humidity) {
+            let humidityGuide = "";
+            if (humidity < 30) {
+                humidityGuide = `Current humidity is only ${humidity}%. The air is incredibly dry! Make sure to give your indoor jungle a good misting today, and keep delicate aroid cuttings away from dry heat drafts.`;
+            } else if (humidity < 50) {
+                humidityGuide = `Current humidity is ${humidity}%. The air is decent, but tropical plants might want a little extra moisture. A great day to top off any water propagation jars.`;
+            } else {
+                humidityGuide = `Current humidity is high at ${humidity}%! Excellent conditions for transitioning tropical aroid cuttings from water to soil without shocking their roots.`;
+            }
+            document.getElementById('flora-humidity-guide').innerText = humidityGuide;
+        }
+
+        function customRealFeel(temp, wind, humidity) {
+            if (temp <= 50 && wind > 3) {
+                let chill = 35.74 + (0.6215 * temp) - (35.75 * Math.pow(wind, 0.16)) + (0.4275 * temp * Math.pow(wind, 0.16));
+                return Math.round(chill);
+            } else if (temp >= 80) {
+                let heat = -42.379 + 2.04901523*temp + 10.14333127*humidity - 0.22475541*temp*humidity - 0.00683783*temp*temp - 0.05481717*humidity*humidity + 0.00122874*temp*temp*humidity + 0.00085282*temp*humidity*humidity - 0.00000199*temp*temp*humidity*humidity;
+                return Math.round(heat);
+            }
+            return Math.round(temp);
+        }
+
+        function toggleDetails(element) {
+            const detailsDiv = element.querySelector('.forecast-details');
+            if (detailsDiv.style.display === 'block') {
+                detailsDiv.style.display = 'none';
+            } else {
+                detailsDiv.style.display = 'block';
+            }
+        }
+
+        function openRadar() {
+            const frame = document.getElementById('radar-frame');
+            frame.src = `https://embed.windy.com/embed2.html?lat=${myLat}&lon=${myLon}&zoom=8&level=surface&overlay=rain&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=mph&metricTemp=%C2%B0F&radarRange=-1`;
+            document.getElementById('radar-modal').style.display = 'flex';
+        }
+
+        function closeRadar() {
+            document.getElementById('radar-modal').style.display = 'none';
+            document.getElementById('radar-frame').src = ""; 
+        }
+
+        function setVibeIndex(temp) {
+            let title = "";
+            let desc = "";
+            if (temp < 10) {
+                title = "❄️ Hibernation Overdrive ❄️";
+                desc = "Way too freezing to function. Wrap up like a burrito, turn the heater up, and just stay under the blankets.";
+            } else if (temp < 20) {
+                title = "🧊 Frosty Comfort 🧊";
+                desc = "Everything is frozen outside! Hide under three blankets and stick to indoor hobbies where it's warm and cozy.";
+            } else if (temp < 30) {
+                title = "🌨️ Quiet Isolation Mode 🌨️";
+                desc = "Ice on the window panes. Total quiet isolation. Put on your favorite headphones and make a giant mug of hot tea.";
+            } else if (temp < 40) {
+                title = "🌬️ Crisp & Chill 🌬️";
+                desc = "Crisp, cold, and quiet. The room is chilled and perfect for keeping a clear head while reorganizing or cleaning up your space.";
+            } else if (temp < 50) {
+                title = "🍂 Sweater Weather 🍂";
+                desc = "Big oversized sweater weather! Open the door for just a second to breathe the freezing air, then rush right back inside.";
+            } else if (temp < 60) {
+                title = "🌸 Tiny Breeze, Big Focus 🌸";
+                desc = "Crack the window open just a tiny bit! The cool air keeps you awake and hyper-focused. Perfect atmosphere for reading or enjoying a warm drink.";
+            } else if (temp < 70) {
+                title = "🍃 Absolute Goldilocks Zone 🍃";
+                desc = "Windows wide open! The breeze is immaculate, and your energy is at 100%. Everything feels completely balanced and perfect.";
+            } else if (temp < 80) {
+                title = "☀️ Sparkly Sunshine ☀️";
+                desc = "Warm and bright! The plants are loving life, energy is super high, and it's the absolute best day to go outside or start a fun project.";
+            } else if (temp < 90) {
+                title = "🧋 Iced Drink & Chill 🧋";
+                desc = "Getting a bit toasty! Time to turn on the fan, grab a massive iced drink, and stick to low-stress, relaxing hobbies indoors.";
+            } else if (temp < 100) {
+                title = "🥵 Meltdown Prevention 🥵";
+                desc = "Too hot! Close the blinds to keep the sun out, dim your screen brightness, and stay strictly inside where the AC can protect you.";
+            } else {
+                title = "🔥 Extreme Heat Warning 🔥";
+                desc = "Code red! The air outside feels like a literal furnace. Fans blasting on maximum speed, lots of hydration, and zero outdoor activity.";
+            }
+            document.getElementById('vibe-title').innerText = title;
+            document.getElementById('vibe-desc').innerText = desc;
+        }
+
+        function setNightSkyClarity(isNight, cloudCoverTotal) {
+            const stargazerTitle = document.getElementById('stargazer-title');
+            const stargazerDesc = document.getElementById('stargazer-desc');
+
+            if (!isNight) {
+                stargazerTitle.innerText = "Sun is currently UP ☀️";
+                stargazerDesc.innerText = "Scanner will activate tonight.";
+                return;
+            }
+
+            if (cloudCoverTotal < 10) {
+                stargazerTitle.innerText = "Void Scanner: ABSOLUTE CLARITY 🌌";
+                stargazerDesc.innerText = "Maximum visibility. Entire constellations are plain as day.";
+            } else if (cloudCoverTotal < 30) {
+                stargazerTitle.innerText = "Void Scanner: GOOD CLARITY 🌠";
+                stargazerDesc.innerText = "Most major stars are visible. Minimal obstruction.";
+            } else if (cloudCoverTotal < 60) {
+                stargazerTitle.innerText = "Void Scanner: PARTIAL CLARITY ☁️";
+                stargazerDesc.innerText = "Stars visible in windows. Moving clouds obscure the void.";
+            } else if (cloudCoverTotal < 90) {
+                stargazerTitle.innerText = "Void Scanner: POOR CLARITY ☁️";
+                stargazerDesc.innerText = "Only the absolute brightest stars/planets cut through.";
+            } else {
+                stargazerTitle.innerText = "Void Scanner: VOID TOTALLY BLOCKED 🌫️";
+                stargazerDesc.innerText = "Overcast ceiling. Zero celestial visibility.";
+            }
+        }
+
+        // ✨ HYPER-SENSITIVE DIORAMA LOGIC ✨
+        function setAtmosphereScanner(low, mid, high, totalCover, isDay) {
+            const box = document.getElementById('diorama-box');
+            const scannerOutput = document.getElementById('cloud-scanner-output');
+
+            box.style.backgroundImage = isDay ? "url('day.jpg')" : "url('night.jpg')";
+            box.innerHTML = '';
+
+            let sensitiveCover = Math.max(low, mid, high, totalCover);
+
+            if (sensitiveCover <= 5) {
+                scannerOutput.innerText = isDay ? "The sky is perfectly clear! ☀️" : "The void is perfectly clear! 🌌";
+                return;
+            }
+
+            const maxSprites = 24; 
+            const spritesToSpawn = Math.ceil(maxSprites * (sensitiveCover / 100));
+
+            for (let i = 0; i < spritesToSpawn; i++) {
+                const sprite = document.createElement('img');
+                
+                sprite.src = isDay ? 'cloud.png' : 'star.png';
+                sprite.className = 'sprite';
+
+                const size = Math.floor(Math.random() * 40) + 40;
+                sprite.style.width = size + 'px';
+
+                sprite.style.left = Math.floor(Math.random() * 90) + '%';
+                sprite.style.top = Math.floor(Math.random() * 80) + '%';
+                sprite.style.opacity = (Math.random() * 0.4) + 0.5;
+                sprite.style.animationDuration = Math.floor(Math.random() * 15 + 10) + 's';
+
+                box.appendChild(sprite);
+            }
+
+            if (sensitiveCover <= 25) {
+                scannerOutput.innerText = "Just a few clouds drifting by. ⛅";
+            } else if (sensitiveCover < 65) {
+                scannerOutput.innerText = "Partially covered sky. Sprites are drifting! ⛅";
+            } else {
+                scannerOutput.innerText = "Heavy cloud cover detected. Maximum sprites spawned! ☁️";
+            }
+        }
+
+        // ✨ SEARCH LOGIC ✨
+        function handleSearchKeyPress(event) {
+            if (event.key === "Enter") {
+                searchLocation();
+            }
+        }
+
+        async function searchLocation() {
+            const query = document.getElementById('search-input').value.trim();
+            if (!query) return;
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('weather-content').style.display = 'none';
+            document.getElementById('loading').innerText = "Searching... 🔍";
+
+            try {
+                const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`;
+                const geoRes = await fetch(geoUrl);
+                const geoData = await geoRes.json();
+
+                if (geoData.results && geoData.results.length > 0) {
+                    const place = geoData.results[0];
+                    const locName = place.name + (place.admin1 ? `, ${place.admin1}` : '');
+                    fetchWeather(place.latitude, place.longitude, locName);
+                } else {
+                    document.getElementById('loading').innerText = "City not found! Try again. 🌸";
+                }
+            } catch (e) {
+                document.getElementById('loading').innerText = "Search error! ✖╭╮✖";
+            }
+        }
+
+        // ✨ MAIN DATA FETCH FUNCTION ✨
+        async function fetchWeatherData(latitude, longitude) {
+            try {
+                let sunsetUtc = null;
+                try {
+                    const sunUrl = `https://api.sunrise-sunset.org/json?lat=${latitude}&lng=${longitude}&formatted=0`;
+                    const sunRes = await fetch(sunUrl);
+                    const sunData = await sunRes.json();
+                    sunsetUtc = sunData.results.sunset;
+                    document.getElementById('sunrise').innerText = formatSunTime(sunData.results.sunrise);
+                    document.getElementById('sunset').innerText = formatSunTime(sunsetUtc);
+                    document.getElementById('golden-hour').innerText = getGoldenHour(sunsetUtc);
+                } catch (e) {
+                    document.getElementById('sunrise').innerText = "--:--";
+                    document.getElementById('sunset').innerText = "--:--";
+                    document.getElementById('golden-hour').innerText = "--:--";
+                }
+
+                const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,dew_point_2m,surface_pressure,wind_speed_10m,wind_gusts_10m,weather_code,uv_index,visibility,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,is_day&hourly=temperature_2m,weather_code,precipitation_probability,precipitation,cloud_cover,surface_pressure&minutely_15=precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,uv_index_max,wind_speed_10m_max,wind_gusts_10m_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto&models=best_match`;
+                const response = await fetch(weatherUrl);
+                const data = await response.json();
+                
+                const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitude}&longitude=${longitude}&current=us_aqi,pm10,pm2_5,ozone&timezone=auto`;
+                const aqiRes = await fetch(aqiUrl);
+                const aqiData = await aqiRes.json();
+
+                const current = data.current;
+                const daily = data.daily;
+                const hourly = data.hourly;
+
+                const currentTemp = Math.round(current.temperature_2m);
+                document.getElementById('temp').innerText = currentTemp + "°";
+                document.getElementById('wind').innerText = Math.round(current.wind_speed_10m);
+                document.getElementById('gusts').innerText = Math.round(current.wind_gusts_10m);
+                
+                const currentHumidity = current.relative_humidity_2m;
+                document.getElementById('humidity').innerText = currentHumidity; 
+                setFloraVibe(currentHumidity);
+                document.getElementById('dewpoint').innerText = Math.round(current.dew_point_2m);
+                
+                const visMiles = (current.visibility / 1609.34).toFixed(1);
+                document.getElementById('visibility').innerText = visMiles;
+                
+                const currentHourIndex = new Date().getHours();
+                const pastPressureIndex = Math.max(0, currentHourIndex - 3); 
+                const pastPressure = hourly.surface_pressure[pastPressureIndex];
+                const pressureDiff = current.surface_pressure - pastPressure;
+                
+                let trendIcon = "〰️"; 
+                if (pressureDiff <= -2.0) trendIcon = "📉 (Storm Drop!)";
+                else if (pressureDiff <= -0.5) trendIcon = "📉";
+                else if (pressureDiff >= 2.0) trendIcon = "📈 (Clearing!)";
+                else if (pressureDiff >= 0.5) trendIcon = "📈";
+                
+                const pressureInHg = (current.surface_pressure * 0.02953).toFixed(2);
+                document.getElementById('pressure').innerText = `${pressureInHg} ${trendIcon}`;
+
+                const aqi = aqiData.current.us_aqi;
+                const pm25 = aqiData.current.pm2_5;
+                const pm10 = aqiData.current.pm10;
+                const ozone = aqiData.current.ozone;
+
+                let aqiStatus = `${aqi} (Good 🫧)`;
+                if (aqi > 50) aqiStatus = `${aqi} (Moderate 🍂)`;
+                if (aqi > 100) aqiStatus = `${aqi} (Poor ⚠️)`;
+                if (aqi > 150) aqiStatus = `${aqi} (Hazardous 🚫)`;
+                document.getElementById('aqi-score').innerText = aqiStatus;
+
+                let pm25Status = "Low 🍃";
+                if (pm25 > 12) pm25Status = "Moderate 🍂";
+                if (pm25 > 35) pm25Status = "High ⚠️";
+                document.getElementById('aqi-pm25').innerText = `${pm25} μg/m³ (${pm25Status})`;
+
+                let pm10Status = "Low 🍃";
+                if (pm10 > 54) pm10Status = "Moderate 🍂";
+                if (pm10 > 154) pm10Status = "High ⚠️";
+                document.getElementById('aqi-pm10').innerText = `${pm10} μg/m³ (${pm10Status})`;
+
+                let ozoneStatus = "Low 🌸";
+                if (ozone > 60) ozoneStatus = "Moderate ☁️";
+                if (ozone > 120) ozoneStatus = "High ⚠️";
+                document.getElementById('aqi-ozone').innerText = `${ozone} μg/m³ (${ozoneStatus})`;
+
+                setVibeIndex(currentTemp);
+                
+                const currentCode = current.weather_code;
+                document.getElementById('status').innerText = `${weatherDescriptions[currentCode] || "Vibing"} ${weatherMoji[currentCode] || "✨"}`;
+
+                const myRealFeel = customRealFeel(current.temperature_2m, current.wind_speed_10m, current.relative_humidity_2m);
+                document.getElementById('apparent').innerText = myRealFeel;
+
+                const currentUV = Math.round(current.uv_index);
+                document.getElementById('uv-number').innerText = currentUV;
+                document.getElementById('uv-text').innerText = getUVSpeech(currentUV);
+
+                const moonData = getMoonPhaseData();
+                document.getElementById('moon-icon').innerText = moonData.phaseInfo.i;
+                document.getElementById('moon-phase').innerText = moonData.phaseInfo.n;
+                document.getElementById('lunar-botanical-guide').innerText = moonData.botanicalGuide;
+
+                const isDaytime = current.is_day === 1;
+                setAtmosphereScanner(
+                    current.cloud_cover_low, 
+                    current.cloud_cover_mid, 
+                    current.cloud_cover_high, 
+                    current.cloud_cover, 
+                    isDaytime
+                );
+
+                const isNight = current.is_day === 0;
+                setNightSkyClarity(isNight, current.cloud_cover);
+
+                const minList = document.getElementById('minutely-list');
+                minList.innerHTML = '';
+                const nowMs = Date.now();
+                let minStartIndex = 0;
+                
+                for(let i=0; i < data.minutely_15.time.length; i++) {
+                    if(new Date(data.minutely_15.time[i]).getTime() >= nowMs - (15 * 60000)) { 
+                        minStartIndex = i;
+                        break;
+                    }
+                }
+
+                for(let i=0; i<4; i++){
+                    let pVal = data.minutely_15.precipitation[minStartIndex + i] || 0;
+                    let timeLabel = `+${(i+1)*15}m`;
+                    let valText = pVal > 0 ? `${pVal}"` : '0"';
+                    let textColor = pVal > 0 ? 'var(--mermaid-aqua)' : 'var(--deep-sea)';
+                    
+                    minList.innerHTML += `
+                        <div class="minutely-col">
+                            <div class="minutely-time">${timeLabel}</div>
+                            <div class="minutely-val" style="color: ${textColor}">${valText}</div>
+                        </div>
+                    `;
+                }
+
+                const hourlyList = document.getElementById('hourly-list');
+                hourlyList.innerHTML = '';
+                if (hourly && hourly.temperature_2m) {
+                    for(let i=0; i < 24; i++) {
+                        const dataIdx = currentHourIndex + i;
+                        if(dataIdx >= hourly.temperature_2m.length) break;
+
+                        const hTime = getMathematicalHour(i);
+                        const hTemp = Math.round(hourly.temperature_2m[dataIdx]);
+                        const hIcon = weatherMoji[hourly.weather_code[dataIdx]] || "✨";
+                        const hPop = hourly.precipitation_probability[dataIdx];
+                        const hPrecip = hourly.precipitation[dataIdx];
+                        
+                        let precipText = hPrecip > 0 ? `💧 ${hPrecip}"` : `💧 ${hPop}%`; 
+                        
+                        hourlyList.innerHTML += `
+                            <div class="hourly-box">
+                                <div class="hourly-time">${hTime}</div>
+                                <div class="hourly-icon">${hIcon}</div>
+                                <div class="hourly-temp">${hTemp}°</div>
+                                <div class="hourly-precip">${precipText}</div>
+                            </div>
+                        `;
+                    }
+                }
+
+                const forecastList = document.getElementById('forecast-list');
+                forecastList.innerHTML = ''; 
+                if (daily && daily.weather_code) {
+                    for (let i = 0; i < 7; i++) {
+                        const dayName = getDayName(i); 
+                        const emoji = weatherMoji[daily.weather_code[i]] || "✨";
+                        const maxTemp = Math.round(daily.temperature_2m_max[i]);
+                        const minTemp = Math.round(daily.temperature_2m_min[i]);
+                        const rainTotal = daily.precipitation_sum[i];
+                        const rainPop = daily.precipitation_probability_max[i];
+                        const uvMax = Math.round(daily.uv_index_max[i] || 0);
+                        const windMax = Math.round(daily.wind_speed_10m_max[i] || 0);
+
+                        let rainDisplay = rainTotal > 0 ? `${rainTotal}"` : `${rainPop}%`;
+
+                        forecastList.innerHTML += `
+                            <div class="forecast-item" onclick="toggleDetails(this)">
+                                <div class="forecast-row">
+                                    <div class="forecast-day">${dayName}</div>
+                                    <div class="forecast-icon">${emoji}</div>
+                                    <div class="forecast-rain">💧 ${rainDisplay}</div>
+                                    <div class="forecast-temps">${maxTemp}° <span class="min-temp">${minTemp}°</span></div>
+                                </div>
+                                <div class="forecast-details">
+                                    <p>🌧️ <span>Max Chance of Rain:</span> ${rainPop}%</p>
+                                    <p>🌬️ <span>Highest Wind:</span> ${windMax} mph</p>
+                                    <p>🧴 <span>Peak UV Index:</span> ${uvMax}</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('weather-content').style.display = 'block';
+            } catch (error) {
+                document.getElementById('loading').innerText = "(✖╭╮✖) Data loading error...";
+            }
+        }
+
+        // ✨ INITIAL FETCH LOGIC ✨
+        async function fetchWeather(overrideLat = null, overrideLon = null, customName = null) {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('weather-content').style.display = 'none';
+
+            if (overrideLat !== null && overrideLon !== null) {
+                myLat = overrideLat;
+                myLon = overrideLon;
+                document.getElementById('location-name').innerText = `📍 ${customName}`;
+                document.getElementById('loading').innerText = "Downloading sky data... 🫧";
+                await fetchWeatherData(myLat, myLon);
+            } else {
+                document.getElementById('loading').innerText = "Locating... 🫧";
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(async (position) => {
+                        myLat = position.coords.latitude;
+                        myLon = position.coords.longitude;
+                        
+                        try {
+                            const geoUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${myLat}&lon=${myLon}&zoom=14`;
+                            const geoRes = await fetch(geoUrl);
+                            const geoData = await geoRes.json();
+                            const address = geoData.address || {};
+                            const locName = address.neighbourhood || address.suburb || address.village || address.town || address.city || "Deep Sea Vibe Zone";
+                            document.getElementById('location-name').innerText = `📍 ${locName}`;
+                        } catch(e) {
+                            document.getElementById('location-name').innerText = `📍 Lost in the waves`;
+                        }
+                        
+                        await fetchWeatherData(myLat, myLon);
+                    }, (err) => {
+                        document.getElementById('loading').innerText = "Location disabled! Type a city above. 🌸";
+                    }, { enableHighAccuracy: true, timeout: 10000 });
+                } else {
+                    document.getElementById('loading').innerText = "GPS not supported! Use the search bar. 🌸";
+                }
+            }
+        }
+
+        window.addEventListener('load', () => {
+            fetchWeather();
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => console.log('ServiceWorker registered! 🫧'))
+                    .catch(err => console.log('ServiceWorker failed: ', err));
+            }
+        });
+    </script>
+</body>
+</html>
